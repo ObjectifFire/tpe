@@ -8,9 +8,9 @@
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
 
-fraise = Product.new(name: fraise, price: 3)
-bannane = Product.new(name: bannane, price: 8)
-pomme = Product.new(name: pomme, price: 5)
+fraise = Product.new(name: "fraise", price: 3)
+bannane = Product.new(name: "bannane", price: 8)
+pomme = Product.new(name: "pomme", price: 5)
 fraise.save!
 bannane.save!
 pomme.save!

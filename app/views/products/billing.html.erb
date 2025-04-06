@@ -1,0 +1,110 @@
+<h1>Caisse enregistreuse</h1>
+
+<div id="product-buttons">
+  <% @products.each do |product| %>
+    <button 
+      onclick="addToCart(<%= product.id %>, '<%= product.name %>', <%= product.price %>)"
+      class="product-button"
+    >
+      <%= product.name %> - <%= number_to_currency(product.price) %>
+    </button>
+  <% end %>
+</div>
+
+<hr>
+
+<h2>🧾 Ticket de caisse</h2>
+<ul id="receipt"></ul>
+
+<h3>Total : <span id="server-total">
+  <%= @total_bill.present? ? number_with_precision(@total_bill, precision: 2) : "0.00" %>
+</span> €</h3>
+
+<button onclick="resetCart()" class="cancel-button">❌ Annuler</button>
+
+<script>
+  let cart = {};
+
+  function addToCart(id, name, price) {
+    if (!cart[id]) {
+      cart[id] = { name: name, quantity: 0, price: price };
+    }
+    cart[id].quantity += 1;
+    renderReceipt();
+  }
+
+  function renderReceipt() {
+    const receipt = document.getElementById('receipt');
+    const serverTotalEl = document.getElementById('server-total');
+    receipt.innerHTML = '';
+
+    const billPayload = [];
+
+    for (const [id, item] of Object.entries(cart)) {
+      const li = document.createElement('li');
+      li.textContent = `${item.name} x ${item.quantity}`;
+      receipt.appendChild(li);
+
+      billPayload.push({ id: parseInt(id), quantity: item.quantity });
+    }
+
+    fetch('/bill', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector("meta[name='csrf-token']").content
+      },
+      body: JSON.stringify({ product: billPayload })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.total !== undefined) {
+        serverTotalEl.textContent = parseFloat(data.total).toFixed(2);
+      }
+    })
+    .catch(err => {
+      console.error("❌ Erreur lors de l'envoi de la facture :", err);
+    });
+  }
+
+  function resetCart() {
+    cart = {};
+    renderReceipt();
+  }
+</script>
+
+<style>
+  #product-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .product-button {
+    padding: 10px;
+    font-size: 16px;
+    background: #d9f7be;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  .product-button:hover {
+    background: #b7eb8f;
+  }
+
+  .cancel-button {
+    margin-top: 10px;
+    padding: 10px;
+    background: #ffa39e;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  .cancel-button:hover {
+    background: #ff7875;
+  }
+</style>

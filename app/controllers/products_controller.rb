@@ -1,6 +1,6 @@
 class ProductsController < ApplicationController
   def billing
-    @products = Product.includes(:reduction).all
+    @products = Product.includes(:reduction).all.limit(15)
   end
 
   def bill

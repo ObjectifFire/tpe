@@ -17,6 +17,3 @@ class Products::BillingService
       @product.reduction.choose_rule(@quantity)
     end
 end
-
-# Call me this way
-# price = Products::BillingService.new(product_id: Product.find(1).id, quantity: 4).call!

@@ -4,16 +4,19 @@ class ProductsController < ApplicationController
   end
 
   def bill
-    @total_bill = 0
-    total_bill = []
-    total_bill = bill_params.map do |param|
-      Products::BillingService.new(product_id: param[:id], quantity: param[:quantity]).call!
-    end
-    @total_bill = total_bill.reduce(:+)
-    render json: { total: @total_bill }
+    calculate_bill_price
+    
+    render json: { total: @total_bill.reduce(:+) }
   end
 
   protected
+
+  def calculate_bill_price
+    @total_bill = bill_params.map do |param|
+      Products::BillingService.new(product_id: param[:id], quantity: param[:quantity]).call!
+    end
+  end
+
   def bill_params
     params.require(:product).each { |param| param.permit(:quantity, :id) }
   end
